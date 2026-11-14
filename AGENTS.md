@@ -28,3 +28,5 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+- Landing + quiz content lives in src/components/iv/data.ts; quiz result = most-chosen personality (ties go to list order) so scoring stays in one testable place.
