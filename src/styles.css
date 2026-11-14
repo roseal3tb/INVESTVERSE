@@ -66,6 +66,8 @@
   --color-deep-glow: var(--deep-glow);
   --color-deep-foreground: var(--deep-foreground);
   --color-mint-soft: var(--mint-soft);
+  --color-mint-deep: var(--mint-deep);
+  --color-mint-tint: var(--mint-tint);
   --font-sans: "IBM Plex Sans Arabic", "Inter", sans-serif;
   --font-latin: "Inter", sans-serif;
   --shadow-card: var(--shadow-card);
@@ -81,7 +83,7 @@
 }
 
 :root {
-  --radius: 1.25rem;
+  --radius: 1.5rem;
   --background: oklch(0.97 0.004 165);
   --foreground: oklch(0.27 0.05 165);
   --card: oklch(1 0 0);
@@ -105,9 +107,11 @@
   --deep-glow: oklch(0.38 0.07 165);
   --deep-foreground: oklch(0.97 0.004 165);
   --mint-soft: oklch(0.88 0.09 163);
+  --mint-deep: oklch(0.5 0.11 163);
+  --mint-tint: oklch(0.955 0.025 163);
   --gradient-deep: radial-gradient(ellipse at center, var(--deep-glow) 0%, var(--deep) 70%);
-  --shadow-card: 0 10px 30px -14px oklch(0.31 0.055 165 / 0.25);
-  --shadow-card-hover: 0 24px 48px -18px oklch(0.31 0.055 165 / 0.4);
+  --shadow-card: 0 12px 36px -18px oklch(0.31 0.055 165 / 0.22);
+  --shadow-card-hover: 0 28px 56px -22px oklch(0.31 0.055 165 / 0.38);
 }
 
 @layer base {
@@ -121,7 +125,68 @@
   }
 }
 
-html { scroll-behavior: smooth; }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-@utility bg-deep-gradient { background: var(--gradient-deep); }
-@utility font-latin { font-family: var(--font-latin); }
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  line-height: 1.8;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: oklch(0.31 0.055 165 / 0.3);
+  border-radius: 9999px;
+}
+
+/* هالات ضوئية ناعمة تتحرك ببطء خلف المحتوى */
+.blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  pointer-events: none;
+  animation: drift 16s ease-in-out infinite alternate;
+}
+.blob-slow {
+  animation-duration: 24s;
+  animation-direction: alternate-reverse;
+}
+@keyframes drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(6%, -8%, 0) scale(1.18);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .blob {
+    animation: none;
+  }
+}
+
+@utility bg-deep-gradient {
+  background: var(--gradient-deep);
+}
+@utility font-latin {
+  font-family: var(--font-latin);
+}

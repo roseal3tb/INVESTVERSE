@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useState, useRef, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion, MotionConfig, useScroll, useTransform } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import { Logo } from "@/components/iv/Logo";
+import { Logo, LogoMark } from "@/components/iv/Logo";
 import { Quiz, icons } from "@/components/iv/Quiz";
-import { personalities, pOrder, booths } from "@/components/iv/data";
+import { personalities, pOrder, booths, zones } from "@/components/iv/data";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -21,173 +21,266 @@ export const Route = createFileRoute("/")({
 });
 
 const ease = [0.22, 1, 0.36, 1] as const;
-const fadeUp = { hidden: { opacity: 0, y: 28 }, show: { opacity: 1, y: 0, transition: { duration: 0.55, ease } } };
-const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
-const pop = { hidden: { opacity: 0, scale: 0.6 }, show: { opacity: 1, scale: 1, transition: { duration: 0.45, ease } } };
 
-function Section({ id, dark, children }: { id?: string; dark?: boolean; children: ReactNode }) {
+/** يظهر العنصر بهدوء من الأسفل أول ما يدخل الشاشة. */
+function Reveal({ i = 0, className = "", children }: { i?: number; className?: string; children: ReactNode }) {
   return (
-    <section id={id} className={`scroll-mt-20 px-5 py-20 md:py-28 ${dark ? "bg-deep-gradient text-deep-foreground" : "bg-background text-foreground"}`}>
-      <motion.div className="mx-auto max-w-6xl" variants={stagger} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.15 }}>
-        {children}
-      </motion.div>
-    </section>
-  );
-}
-function Heading({ tag, title }: { tag: string; title: string }) {
-  return (
-    <motion.div variants={fadeUp} className="mb-12 text-center">
-      <div className="font-latin text-xs font-semibold tracking-[0.35em] text-primary">{tag}</div>
-      <h2 className="mt-3 text-3xl font-bold md:text-5xl">{title}</h2>
+    <motion.div
+      className={className}
+      initial={{ opacity: 0, y: 36 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.25 }}
+      transition={{ duration: 0.75, ease, delay: (i % 3) * 0.09 }}
+    >
+      {children}
     </motion.div>
   );
 }
+
+function Heading({ tag, title, dark }: { tag: string; title: string; dark?: boolean }) {
+  return (
+    <Reveal className="mb-12 text-center md:mb-16">
+      <div className={`font-latin text-xs font-semibold tracking-[0.35em] ${dark ? "text-primary" : "text-mint-deep"}`}>
+        {tag}
+      </div>
+      <h2 className="mt-3 text-3xl font-bold md:text-5xl">{title}</h2>
+    </Reveal>
+  );
+}
+
 const Num = ({ n }: { n: string }) => (
-  <motion.span variants={pop} className="inline-flex rounded-full bg-primary px-4 py-1 font-latin text-sm font-bold text-primary-foreground">{n}</motion.span>
+  <span className="inline-flex rounded-full bg-primary px-4 py-1 font-latin text-sm font-bold text-primary-foreground">
+    {n}
+  </span>
 );
-const lift = { whileHover: { y: -6 }, whileTap: { y: -4, scale: 0.99 } };
+
 function CTA({ onClick, children, ghost }: { onClick: () => void; children: ReactNode; ghost?: boolean }) {
   return (
-    <motion.button onClick={onClick} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.95 }}
-      className={`min-h-14 rounded-full px-8 text-lg font-semibold transition ${ghost ? "border-2 border-deep-foreground/30 text-deep-foreground hover:border-primary" : "bg-primary text-primary-foreground shadow-card-hover"}`}>
+    <motion.button
+      onClick={onClick}
+      whileHover={{ scale: 1.04 }}
+      whileTap={{ scale: 0.96 }}
+      transition={{ type: "spring", stiffness: 320, damping: 22 }}
+      className={`min-h-14 rounded-full px-9 text-lg font-semibold ${
+        ghost
+          ? "border-2 border-deep-foreground/25 text-deep-foreground hover:border-primary"
+          : "bg-primary text-primary-foreground shadow-card-hover"
+      }`}
+    >
       {children}
     </motion.button>
   );
 }
 
-const nav = [["about", "عن الاختبار"], ["how", "كيف يعمل"], ["personas", "الشخصيات"], ["journey", "الرحلة"], ["booths", "البوثات"]];
+const panel = "mx-2 rounded-[2rem] md:mx-3 md:rounded-[3rem]";
+const card =
+  "h-full rounded-[1.75rem] p-7 transition duration-300 ease-out hover:-translate-y-1.5 hover:shadow-card-hover";
+const nav = [
+  ["idea", "الفكرة"],
+  ["personas", "الشخصيات"],
+  ["booths", "البوثات"],
+];
 
 function Index() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const f = () => setScrolled(window.scrollY > 40);
-    f(); window.addEventListener("scroll", f); return () => window.removeEventListener("scroll", f);
+    f();
+    window.addEventListener("scroll", f, { passive: true });
+    return () => window.removeEventListener("scroll", f);
   }, []);
-  useEffect(() => { document.body.style.overflow = open ? "hidden" : ""; }, [open]);
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+  }, [open]);
   const start = () => setOpen(true);
-  const close = useCallback((home?: boolean) => { setOpen(false); if (home) window.scrollTo({ top: 0 }); }, []);
+  const close = useCallback((home?: boolean) => {
+    setOpen(false);
+    if (home) window.scrollTo({ top: 0 });
+  }, []);
   const title = "اكتشف شخصيتك الاستثمارية".split(" ");
 
-  const tl = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: tl, offset: ["start 80%", "end 60%"] });
-  const lineH = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+  // المحتوى الرئيسي ينسحب ويخفت بهدوء مع النزول
+  const hero = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: hero, offset: ["start start", "end start"] });
+  const heroY = useTransform(scrollYProgress, [0, 1], [0, 140]);
+  const heroO = useTransform(scrollYProgress, [0, 0.75], [1, 0]);
 
   return (
     <MotionConfig reducedMotion="user">
-      <header className={`fixed inset-x-0 top-0 z-40 transition-all ${scrolled ? "bg-deep/80 py-2 shadow-card backdrop-blur-md" : "py-4"}`}>
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5">
-          <a href="#top"><Logo /></a>
-          <nav className="hidden gap-6 lg:flex">
-            {nav.map(([id, l]) => <a key={id} href={`#${id}`} className="text-deep-foreground/80 transition hover:text-primary">{l}</a>)}
+      <header className="fixed inset-x-0 top-4 z-40 px-4 md:top-6">
+        <div
+          className={`mx-auto flex max-w-5xl items-center justify-between gap-4 rounded-full py-2 pe-2 ps-5 text-deep-foreground transition-all duration-500 ${
+            scrolled ? "bg-deep/85 shadow-card-hover backdrop-blur-xl" : "bg-transparent"
+          }`}
+        >
+          <a href="#top" aria-label="INVESTVERSE" className="rounded-full">
+            <Logo />
+          </a>
+          <nav className="hidden gap-8 md:flex">
+            {nav.map(([id, l]) => (
+              <a key={id} href={`#${id}`} className="rounded-full text-deep-foreground/75 transition hover:text-primary">
+                {l}
+              </a>
+            ))}
           </nav>
-          <motion.button whileTap={{ scale: 0.95 }} onClick={start} className="min-h-11 rounded-full bg-primary px-5 font-semibold text-primary-foreground">ابدأ الاختبار</motion.button>
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={start}
+            className="min-h-11 rounded-full bg-primary px-6 font-semibold text-primary-foreground"
+          >
+            ابدأ الاختبار
+          </motion.button>
         </div>
       </header>
 
-      <main id="top">
-        <section className="relative flex min-h-screen flex-col items-center justify-center gap-10 bg-deep-gradient px-5 pb-24 pt-28 text-center text-deep-foreground">
-          <Logo size="lg" />
-          <div>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.6 }}
-              className="mx-auto mb-4 inline-flex rounded-full border border-primary/40 px-4 py-1 text-sm text-mint-soft">
-              <span className="font-latin">INVESTVERSE</span>&nbsp;· عالم الاستثمار
-            </motion.div>
-            <h1 className="text-4xl font-bold md:text-7xl">
-              {title.map((w, i) => (
-                <motion.span key={i} className="inline-block" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1.7 + i * 0.12, duration: 0.5, ease }}>{w}&nbsp;</motion.span>
-              ))}
-            </h1>
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.2 }} className="mt-4 text-xl text-mint-soft">٩ أسئلة · دقيقتان</motion.p>
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2.35, duration: 0.5 }} className="mt-8 flex flex-wrap justify-center gap-4">
-              <CTA onClick={start}>ابدأ الاختبار</CTA>
-              <CTA ghost onClick={() => document.getElementById("personas")?.scrollIntoView()}>تعرّف على الشخصيات</CTA>
-            </motion.div>
-          </div>
-          <motion.a href="#about" className="absolute bottom-6 flex flex-col items-center text-sm text-deep-foreground/70"
-            animate={{ y: [0, 8, 0] }} transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }}>
+      <main id="top" className="pt-2 md:pt-3">
+        <section
+          ref={hero}
+          className={`${panel} relative flex min-h-[calc(100svh-1rem)] flex-col items-center justify-center overflow-hidden bg-deep-gradient px-5 pb-24 pt-28 text-center text-deep-foreground md:min-h-[calc(100svh-1.5rem)]`}
+        >
+          <div aria-hidden className="blob -top-24 start-[-8%] h-80 w-80 bg-primary/25" />
+          <div aria-hidden className="blob blob-slow bottom-[-18%] end-[-8%] h-96 w-96 bg-mint-soft/15" />
+
+          <motion.div style={{ y: heroY, opacity: heroO }} className="relative flex flex-col items-center gap-10">
+            <Logo size="lg" />
+            <div>
+              <h1 className="text-4xl font-bold leading-tight md:text-6xl">
+                {title.map((w, i) => (
+                  <motion.span
+                    key={i}
+                    className="inline-block"
+                    initial={{ opacity: 0, y: 28 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 + i * 0.12, duration: 0.7, ease }}
+                  >
+                    {w}&nbsp;
+                  </motion.span>
+                ))}
+              </h1>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1, duration: 0.6 }}
+                className="mt-4 text-xl text-mint-soft"
+              >
+                ٩ أسئلة · دقيقتان
+              </motion.p>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.15, duration: 0.6, ease }}
+                className="mt-9 flex flex-wrap justify-center gap-4"
+              >
+                <CTA onClick={start}>ابدأ الاختبار</CTA>
+                <CTA ghost onClick={() => document.getElementById("personas")?.scrollIntoView()}>
+                  تعرّف على الشخصيات
+                </CTA>
+              </motion.div>
+            </div>
+          </motion.div>
+
+          <motion.a
+            href="#idea"
+            className="absolute bottom-7 flex flex-col items-center rounded-full text-sm text-deep-foreground/60"
+            animate={{ y: [0, 8, 0] }}
+            transition={{ repeat: Infinity, duration: 2.4, ease: "easeInOut" }}
+          >
             مرّر للاكتشاف <ChevronDown />
           </motion.a>
         </section>
 
-        <Section id="about">
-          <Heading tag="ABOUT" title="عن الاختبار" />
-          <motion.p variants={fadeUp} className="mx-auto max-w-3xl text-center text-xl leading-loose text-muted-foreground md:text-2xl">
-            تجربة تثقيفية تفاعلية؛ تدخل وأنت لا تعرف الكثير عن الاستثمار، وتخرج وأنت تعرف كيف تبدأ، وأين تستثمر، وكيف تحمي أموالك.
-          </motion.p>
-        </Section>
-
-        <Section id="how" dark>
-          <Heading tag="HOW IT WORKS" title="كيف يعمل" />
-          <div className="grid gap-6 md:grid-cols-3">
-            {[["01", "ANSWER", "أجب عن ٩ أسئلة"], ["02", "DISCOVER", "اكتشف شخصيتك"], ["03", "EXPLORE", "زر البوث المناسب لك"]].map(([n, t, l]) => (
-              <motion.div key={n} variants={fadeUp} {...lift} className="rounded-3xl bg-card p-8 text-card-foreground shadow-card transition-shadow hover:shadow-card-hover">
-                <Num n={n!} />
-                <div className="mt-6 font-latin text-xs tracking-[0.3em] text-muted-foreground">{t}</div>
-                <div className="mt-2 text-2xl font-bold">{l}</div>
-              </motion.div>
-            ))}
+        <section id="idea" className="scroll-mt-24 px-5 py-24 md:py-32">
+          <div className="mx-auto max-w-6xl">
+            <Reveal className="mx-auto mb-14 max-w-4xl text-center md:mb-20">
+              <div className="text-sm font-semibold text-mint-deep">الفكرة</div>
+              <h2 className="mt-4 text-balance text-2xl font-bold leading-relaxed md:text-4xl md:leading-relaxed">
+                تدخل وأنت لا تعرف الكثير عن الاستثمار، وتخرج وأنت تعرف{" "}
+                <span className="text-mint-deep">كيف تبدأ، وأين تستثمر، وكيف تحمي أموالك</span>
+              </h2>
+            </Reveal>
+            <div className="grid gap-5 md:grid-cols-3 md:gap-6">
+              {zones.map((z, i) => (
+                <Reveal key={z.n} i={i}>
+                  <div
+                    className={`${card} ${
+                      i === 2 ? "bg-deep text-deep-foreground shadow-card-hover" : "bg-card shadow-card"
+                    }`}
+                  >
+                    <div className="font-latin text-4xl font-bold text-primary">{z.n}</div>
+                    <div className="mt-5 text-2xl font-bold">{z.name}</div>
+                    <p className={`mt-2 ${i === 2 ? "text-deep-foreground/75" : "text-muted-foreground"}`}>{z.goal}</p>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
           </div>
-        </Section>
+        </section>
 
-        <Section id="personas">
-          <Heading tag="5 PERSONALITIES" title="الشخصيات الخمس" />
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
-            {pOrder.map((k) => { const p = personalities[k]; const I = icons[p.icon as keyof typeof icons]; return (
-              <motion.div key={k} variants={fadeUp} {...lift} className="rounded-3xl bg-card p-6 shadow-card transition-shadow hover:shadow-card-hover">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-deep text-primary"><I className="h-7 w-7" /></div>
-                <div className="mt-5 text-xl font-bold">{p.name}</div>
-                <p className="mt-2 border-s-2 border-primary ps-3 text-muted-foreground">{p.line}</p>
-              </motion.div>); })}
+        <section id="personas" className={`${panel} scroll-mt-24 bg-mint-tint px-5 py-20 md:py-28`}>
+          <div className="mx-auto max-w-6xl">
+            <Heading tag="5 PERSONALITIES" title="الشخصيات الخمس" />
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+              {pOrder.map((k, i) => {
+                const p = personalities[k];
+                const I = icons[p.icon as keyof typeof icons];
+                return (
+                  <Reveal key={k} i={i}>
+                    <div className={`${card} bg-card text-center shadow-card`}>
+                      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-deep text-primary">
+                        <I className="h-7 w-7" />
+                      </div>
+                      <div className="mt-5 text-xl font-bold">{p.name}</div>
+                      <p className="mt-2 text-muted-foreground">{p.line}</p>
+                    </div>
+                  </Reveal>
+                );
+              })}
+            </div>
           </div>
-        </Section>
+        </section>
 
-        <Section id="journey" dark>
-          <Heading tag="THE JOURNEY" title="الرحلة" />
-          <div ref={tl} className="relative mx-auto max-w-2xl">
-            <div className="absolute inset-y-0 start-6 w-0.5 bg-deep-foreground/15" />
-            <motion.div style={{ height: lineH }} className="absolute start-6 top-0 w-0.5 bg-primary" />
-            {[["01", "افهم قبل أن تستثمر"], ["02", "اكتشف الفرص الاستثمارية"], ["03", "كن مستثمرًا"]].map(([n, l]) => (
-              <motion.div key={n} variants={fadeUp} className="relative flex items-center gap-6 py-8">
-                <motion.div variants={pop} className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary font-latin font-bold text-primary-foreground">{n}</motion.div>
-                <div className="text-2xl font-bold md:text-3xl">{l}</div>
-              </motion.div>
-            ))}
+        <div className="py-3 md:py-4" />
+
+        <section
+          id="booths"
+          className={`${panel} relative scroll-mt-24 overflow-hidden bg-deep-gradient px-5 py-20 text-deep-foreground md:py-28`}
+        >
+          <div aria-hidden className="blob blob-slow -top-32 end-[10%] h-80 w-80 bg-primary/15" />
+          <div className="relative mx-auto max-w-6xl">
+            <Heading dark tag="BOOTHS" title="البوثات" />
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {booths.map((b, i) => (
+                <Reveal key={b.name} i={i}>
+                  <div className={`${card} border border-deep-foreground/10 bg-deep-foreground/[0.06]`}>
+                    <Num n={`0${i + 1}`} />
+                    <div className="mt-5 text-xl font-bold">{b.name}</div>
+                    <p className="mt-2 text-deep-foreground/70">{b.msg}</p>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
           </div>
-        </Section>
+        </section>
 
-        <Section id="booths">
-          <Heading tag="BOOTHS" title="البوثات" />
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {booths.map((b, i) => (
-              <motion.div key={b.name} variants={fadeUp} {...lift} className="flex flex-col rounded-3xl bg-card p-6 shadow-card transition-shadow hover:shadow-card-hover">
-                <div><Num n={`0${i + 1}`} /></div>
-                <div className="mt-4 text-xl font-bold">{b.name}</div>
-                <div className="mt-4 rounded-2xl bg-deep p-4 text-deep-foreground">
-                  <div className="text-xs font-semibold text-primary">الرسالة</div>
-                  <p className="mt-1">{b.msg}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </Section>
-
-        <Section dark>
-          <motion.div variants={fadeUp} className="text-center">
-            <h2 className="text-4xl font-bold md:text-6xl">جاهز تعرف شخصيتك؟</h2>
-            <div className="mt-8"><CTA onClick={start}>ابدأ الاختبار</CTA></div>
-          </motion.div>
-        </Section>
+        <section className="px-5 py-24 md:py-32">
+          <Reveal className="flex flex-col items-center text-center">
+            <LogoMark className="h-16 w-16 text-deep" />
+            <h2 className="mt-6 text-4xl font-bold md:text-6xl">جاهز تعرف شخصيتك؟</h2>
+            <p className="mt-3 text-lg text-muted-foreground">٩ أسئلة · دقيقتان</p>
+            <div className="mt-9">
+              <CTA onClick={start}>ابدأ الاختبار</CTA>
+            </div>
+          </Reveal>
+        </section>
       </main>
 
-      <footer className="border-t border-deep-foreground/10 bg-deep px-5 py-10 text-deep-foreground">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 text-center">
+      <footer className={`${panel} mb-2 bg-deep px-5 py-12 text-deep-foreground md:mb-3`}>
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-5 text-center">
           <Logo />
-          <div className="flex flex-wrap justify-center gap-5 text-deep-foreground/75">
-            {nav.map(([id, l]) => <a key={id} href={`#${id}`} className="hover:text-primary">{l}</a>)}
-          </div>
-          <p className="text-sm text-deep-foreground/60">هذا الاختبار لأغراض تثقيفية فقط ولا يُعد توصية أو نصيحة استثمارية.</p>
+          <p className="text-sm text-deep-foreground/55">
+            هذا الاختبار لأغراض تثقيفية فقط ولا يُعد توصية أو نصيحة استثمارية.
+          </p>
         </div>
       </footer>
 
