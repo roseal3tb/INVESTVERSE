@@ -1,71 +1,67 @@
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 
-// الشعار مرسوم SVG بخلفية شفافة: الحلقة تأخذ لون النص المحيط (currentColor) والسهم بالنعناعي.
-const RING = "M75.7 25.1A42 42 0 1 0 101.1 55.3";
-const LINE = "M33 82 49 66.5 65 77.5 99 34";
-const HEAD = "M108 22 92 29 105 40Z";
+// ملفات الشعار مأخوذة من ملف الهوية البصرية بخلفية شفافة (public/brand).
+const src = {
+  dark: "/brand/mark-on-dark.png",
+  light: "/brand/mark-on-light.png",
+} as const;
 
-export function LogoMark({ className = "", animate = false }: { className?: string; animate?: boolean }) {
-  const reduce = useReducedMotion();
-  const a = animate && !reduce;
+/** أيقونة الشعار فقط. tone = لون الخلفية اللي تحتها. */
+export function LogoMark({
+  className = "",
+  tone = "dark",
+}: {
+  className?: string;
+  tone?: "dark" | "light";
+}) {
   return (
-    <svg viewBox="0 0 120 120" className={className} fill="none" aria-hidden>
-      <motion.path
-        d={RING}
-        stroke="currentColor"
-        strokeWidth="8"
-        strokeLinecap="round"
-        initial={a ? { pathLength: 0 } : false}
-        animate={{ pathLength: 1 }}
-        transition={{ duration: 0.9, ease: "easeInOut" }}
-      />
-      <motion.path
-        d={LINE}
-        className="stroke-primary"
-        strokeWidth="8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        initial={a ? { pathLength: 0 } : false}
-        animate={{ pathLength: 1 }}
-        transition={{ duration: 0.6, delay: a ? 0.6 : 0, ease: "easeOut" }}
-      />
-      <motion.path
-        d={HEAD}
-        className="fill-primary stroke-primary"
-        strokeWidth="3"
-        strokeLinejoin="round"
-        initial={a ? { opacity: 0, scale: 0.4 } : false}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.35, delay: a ? 1.1 : 0, ease: "easeOut" }}
-      />
-    </svg>
+    <img
+      src={src[tone]}
+      alt=""
+      aria-hidden
+      decoding="async"
+      className={`select-none object-contain ${className}`}
+      draggable={false}
+    />
   );
 }
 
-function Wordmark({ className = "" }: { className?: string }) {
-  return (
-    <span dir="ltr" className={`font-latin font-extrabold tracking-tight ${className}`}>
-      INVEST<span className="font-light text-primary">VERSE</span>
-    </span>
-  );
-}
-
+/** الشعار الكامل للخلفيات الداكنة: sm أفقي للترويسة والتذييل، lg عمودي للواجهة. */
 export function Logo({ size = "sm" }: { size?: "sm" | "lg" }) {
   if (size === "sm")
     return (
-      <div className="flex items-center gap-2.5" dir="ltr">
-        <LogoMark className="h-9 w-9" />
-        <Wordmark className="text-lg" />
-      </div>
+      <img
+        src="/brand/logo-on-dark.png"
+        alt="INVESTVERSE"
+        width={1101}
+        height={331}
+        className="h-9 w-auto select-none md:h-10"
+        draggable={false}
+      />
     );
   return (
     <div className="flex flex-col items-center text-center">
-      <LogoMark animate className="h-28 w-28 md:h-36 md:w-36" />
-      <Wordmark className="mt-5 text-4xl md:text-5xl" />
-      <div className="mt-2 text-lg opacity-85">عالم الاستثمار</div>
-      <div dir="ltr" className="mt-3 font-latin text-[0.7rem] tracking-[0.4em] opacity-60">
-        EXPLORE · INVEST · GROW
+      <div className="float">
+        <motion.img
+          src="/brand/logo-stacked-on-dark.png"
+          alt="INVESTVERSE"
+          width={351}
+          height={316}
+          className="h-28 w-auto select-none sm:h-36 lg:h-44"
+          draggable={false}
+          initial={{ opacity: 0, scale: 0.85, y: 16 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+        />
       </div>
+      <motion.div
+        className="mt-4 text-lg text-deep-foreground/80"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5, duration: 0.6 }}
+      >
+        عالم الاستثمار
+      </motion.div>
     </div>
   );
 }
