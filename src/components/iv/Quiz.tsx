@@ -53,9 +53,9 @@ export function Quiz({ onClose }: { onClose: (home?: boolean) => void }) {
             {!done ? (
               <motion.div key={step} custom={dir} className="w-full"
                 initial={{ opacity: 0, x: -60 * dir }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 60 * dir }} transition={{ duration: 0.4 }}>
-                <h2 className="mb-8 text-center text-2xl font-bold leading-snug md:text-4xl">{questions[step].q}</h2>
+                <h2 className="mb-8 text-center text-2xl font-bold leading-snug md:text-4xl">{questions[step]!.q}</h2>
                 <div className="grid gap-4 md:grid-cols-2">
-                  {questions[step].o.map((o) => (
+                  {questions[step]!.o.map((o) => (
                     <motion.button key={o.t} onClick={() => pick(o.p)} whileTap={{ scale: 0.97 }}
                       className={`min-h-20 rounded-3xl border-2 p-5 text-start text-lg font-medium transition hover:border-primary hover:bg-deep-foreground/10 ${answers[step] === o.p ? "border-primary bg-deep-foreground/10" : "border-deep-foreground/15 bg-deep-foreground/5"}`}>
                       {o.t}

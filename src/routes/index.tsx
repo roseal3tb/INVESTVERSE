@@ -123,7 +123,7 @@ function Index() {
           <div className="grid gap-6 md:grid-cols-3">
             {[["01", "ANSWER", "أجب عن ٩ أسئلة"], ["02", "DISCOVER", "اكتشف شخصيتك"], ["03", "EXPLORE", "زر البوث المناسب لك"]].map(([n, t, l]) => (
               <motion.div key={n} variants={fadeUp} {...lift} className="rounded-3xl bg-card p-8 text-card-foreground shadow-card transition-shadow hover:shadow-card-hover">
-                <Num n={n} />
+                <Num n={n!} />
                 <div className="mt-6 font-latin text-xs tracking-[0.3em] text-muted-foreground">{t}</div>
                 <div className="mt-2 text-2xl font-bold">{l}</div>
               </motion.div>

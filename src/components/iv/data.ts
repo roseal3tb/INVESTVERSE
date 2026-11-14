@@ -69,5 +69,5 @@ export const booths = [
 export function scoreResult(answers: PKey[]): PKey {
   const c: Record<string, number> = {};
   answers.forEach((a) => (c[a] = (c[a] ?? 0) + 1));
-  return pOrder.reduce((best, k) => ((c[k] ?? 0) > (c[best] ?? 0) ? k : best), pOrder[0]);
+  return pOrder.reduce<PKey>((best, k) => ((c[k] ?? 0) > (c[best] ?? 0) ? k : best), "explorer");
 }
